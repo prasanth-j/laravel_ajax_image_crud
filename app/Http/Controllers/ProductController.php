@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Yajra\DataTables\DataTables;
 
 class ProductController extends Controller
 {
@@ -16,6 +17,20 @@ class ProductController extends Controller
     public function index()
     {
         return view('product.index');
+    }
+
+    /**
+     * Fetch a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function fetch()
+    {
+        $products = Products::latest()->get();
+
+        return DataTables::of($products)
+            ->addIndexColumn()
+            ->make(true);
     }
 
     /**

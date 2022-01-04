@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Models\Products;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,5 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// This route should be added before the resource controller because it's a custom method.
+Route::get('product/fetch', [ProductController::class, 'fetch'])->name('product.fetch');
 
 Route::resource('product', ProductController::class);

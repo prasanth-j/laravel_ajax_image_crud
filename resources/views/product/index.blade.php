@@ -16,6 +16,9 @@
 
     <!-- Toastr CSS CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+
+    <!-- DataTables CSS CDN -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap5.min.css" />
 </head>
 
 <body>
@@ -55,7 +58,14 @@
                         Product List
                     </div>
                     <div class="card-body">
-
+                        <table class="table table-hover" id="productTable">
+                            <thead>
+                                <th>#</th>
+                                <th>Product Image</th>
+                                <th>Product Name</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -68,6 +78,10 @@
 
     <!-- Toastr JS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+    <!-- DataTables JS CDN -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(function() {
@@ -98,6 +112,7 @@
                         } else if (data.code == 0 && data.status == 'warning') {
                             toastr[data.status](data.msg);
                         } else if (data.code == 1 && data.status == 'success') {
+                            $('#productTable').DataTable().ajax.reload(null, false);
                             $(form)[0].reset();
                             $('#img_holder').attr('src', 'https://dummyimage.com/200x200/cccccc/969696.png&text=Preview');
                             toastr[data.status](data.msg);
@@ -105,6 +120,40 @@
                         $('form').find('button[type=submit]').text('Add').prop('disabled', false);
                     }
                 });
+            });
+
+            // Fetch Products
+
+
+            $('#productTable').DataTable({
+                processing: true,
+                serverSide: true,
+                info: true,
+                ajax: "{{route('product.fetch')}}",
+                "pageLength": 5,
+                "aLengthMenu": [
+                    [5, 10, 25, 50, -1],
+                    [5, 10, 25, 50, "All"]
+                ],
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        className: "align-middle"
+                    },
+                    {
+                        data: 'product_image',
+                        name: 'product_image',
+                        className: "align-middle",
+                        render: function(data, type, full, meta) {
+                            return '<img class="img-fluid img-thumbnail" src="/storage/files/products/' + data + '" width="50px"/>';
+                        }
+                    },
+                    {
+                        data: 'product_name',
+                        name: 'product_name',
+                        className: "align-middle"
+                    },
+                ]
             });
 
         });
