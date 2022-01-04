@@ -12,12 +12,15 @@
     <title>Ajax Image CRUD</title>
 
     <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+
+    <!-- Toastr CSS CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 </head>
 
 <body>
     <div class="container">
-        <div class="row mt-4">
+        <div class="row gy-4 mt-4">
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -34,10 +37,14 @@
                                 <label for="product_image">Product Image</label>
                                 <input type="file" accept="image/*" class="form-control" name="product_image" id="product_image" onchange="document.getElementById('img_holder').src = window.URL.createObjectURL(this.files[0])">
                             </div>
-                            <div>
+                            <div class="mb-3">
                                 <img class="img-thumbnail rounded mx-auto d-block" width="150px" id="img_holder" src="https://dummyimage.com/200x200/cccccc/969696.png&text=Preview" alt="Preview Image">
                             </div>
-                            <button type="submit" class="btn btn-primary">ADD</button>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">
+                                    ADD
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -59,11 +66,16 @@
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    <!-- Toastr JS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
     <script>
         $(function() {
 
             $('form').submit(function(e) {
                 e.preventDefault();
+
+                $(this).find('button[type=submit]').text('Adding...').prop('disabled', true).prepend('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ');
 
                 var form = this;
 
@@ -79,20 +91,42 @@
                         $(form).find('input').removeClass('is-invalid');
                     },
                     success: function(data) {
-                        if (data.code == 0) {
-                            $.each(data.error, function(key, value) {
+                        if (data.code == 0 && data.status == 'error') {
+                            $.each(data.errors, function(key, value) {
                                 $(form).find('input#' + key).addClass('is-invalid').after('<div class="invalid-feedback">' + value + '</div>');
                             });
-                        } else {
+                        } else if (data.code == 0 && data.status == 'warning') {
+                            toastr[data.status](data.msg);
+                        } else if (data.code == 1 && data.status == 'success') {
                             $(form)[0].reset();
                             $('#img_holder').attr('src', 'https://dummyimage.com/200x200/cccccc/969696.png&text=Preview');
-                            alert(data.msg);
+                            toastr[data.status](data.msg);
                         }
+                        $('form').find('button[type=submit]').text('Add').prop('disabled', false);
                     }
                 });
             });
 
         });
+
+
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "100",
+            "hideDuration": "500",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
     </script>
 </body>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Products;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -46,21 +47,22 @@ class ProductController extends Controller
         ]);
 
         if (!$validator->passes()) {
-            return response()->json(['code' => 0, 'error' => $validator->errors()->toArray()]);
+            return response()->json(['code' => 0, 'status' => 'error', 'errors' => $validator->errors()->toArray()]);
         } else {
-            $path = 'files/';
+            $path = 'files/products';
             $image = $request->file('product_image');
-            $image_name = time() . '_' . $image->getClientOriginalName();
-
+            $image_name = Str::random(10) . time() . "." . $image->getClientOriginalExtension();
             $upload = $image->storeAs($path, $image_name, 'public');
 
-            if ($upload) {
-                Products::insert([
-                    'product_name' => $request->product_name,
-                    'product_image' => $image_name
-                ]);
+            $product = new Products;
+            $product->product_name = $request->input('product_name');
+            $product->product_image = $image_name;
+            $query = $product->save();
 
-                return response()->json(['code' => 1, 'msg' => 'Product added successfully.']);
+            if ($query && $upload) {
+                return response()->json(['code' => 1, 'status' => 'success', 'msg' => 'Product added successfully.']);
+            } else {
+                return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not saved.']);
             }
         }
     }
