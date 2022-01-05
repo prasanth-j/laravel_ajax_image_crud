@@ -234,6 +234,30 @@
                 }, 'json');
             });
 
+            // Delete Product
+            $(document).on('click', '#deleteBtn', function() {
+                var productId = $(this).data('id');
+                let confirmText = "Are You sure! You want to delete?";
+
+                if (confirm(confirmText) == true) {
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+
+                    $.ajax({
+                        type: "DELETE",
+                        url: "{{ url('product')}}" + '/' + productId,
+                        success: function(data) {
+                            if (data.code == 1 && data.status == 'success' && data.method == 'destroy') {
+                                $('#productTable').DataTable().ajax.reload(null, false);
+                                toastr[data.status](data.msg);
+                            }
+                        }
+                    });
+                }
+            });
         });
 
 

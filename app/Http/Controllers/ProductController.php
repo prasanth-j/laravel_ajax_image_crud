@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Products;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
 
@@ -95,7 +96,6 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        // $productId = $request->productId;
         $product = Products::find($id);
 
         return response()->json(['product' => $product]);
@@ -125,8 +125,14 @@ class ProductController extends Controller
             $product = Products::find($request->input('edit_product_id'));
             $product->product_name = $request->input('edit_product_name');
 
-            if ($request->file('edit_product_image')) {
-                unlink('storage/files/products/' . $product->product_image);
+            if ($request->hasFile('edit_product_image')) {
+                // unlink('storage/files/products/' . $product->product_image);
+                $oldFile = 'storage/files/products/' . $product->product_image;
+
+                if (File::exists($oldFile)) {
+                    File::delete($oldFile);
+                }
+
                 $path = 'files/products';
                 $image = $request->file('edit_product_image');
                 $image_name = Str::random(10) . time() . "." . $image->getClientOriginalExtension();
@@ -139,7 +145,7 @@ class ProductController extends Controller
             if ($query) {
                 return response()->json(['code' => 1, 'status' => 'success', 'method' => 'update', 'msg' => 'Product updated successfully.']);
             } else {
-                return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not saved.']);
+                return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not updated.']);
             }
         }
     }
@@ -152,6 +158,19 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Products::find($id);
+
+        $image = 'storage/files/products/' . $product->product_image;
+        if (File::exists($image)) {
+            File::delete($image);
+        }
+
+        $query = $product->delete();
+
+        if ($query) {
+            return response()->json(['code' => 1, 'status' => 'success', 'method' => 'destroy', 'msg' => 'Product deleted successfully.']);
+        } else {
+            return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not deleted.']);
+        }
     }
 }
