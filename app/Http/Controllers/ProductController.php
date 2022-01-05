@@ -16,21 +16,15 @@ class ProductController extends Controller
      */
     public function index()
     {
+        if (request()->ajax()) {
+            $products = Products::latest()->get();
+
+            return DataTables::of($products)
+                ->addIndexColumn()
+                ->make(true);
+        }
+
         return view('product.index');
-    }
-
-    /**
-     * Fetch a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function fetch()
-    {
-        $products = Products::latest()->get();
-
-        return DataTables::of($products)
-            ->addIndexColumn()
-            ->make(true);
     }
 
     /**
@@ -75,7 +69,7 @@ class ProductController extends Controller
             $query = $product->save();
 
             if ($query && $upload) {
-                return response()->json(['code' => 1, 'status' => 'success', 'msg' => 'Product added successfully.']);
+                return response()->json(['code' => 1, 'status' => 'success', 'method' => 'store', 'msg' => 'Product added successfully.']);
             } else {
                 return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not saved.']);
             }
@@ -101,7 +95,10 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        //
+        // $productId = $request->productId;
+        $product = Products::find($id);
+
+        return response()->json(['product' => $product]);
     }
 
     /**
@@ -111,9 +108,40 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $validator = \Validator::make($request->all(), [
+            'edit_product_name' => 'required|unique:products,product_name,' . $request->input('edit_product_id'),
+            'edit_product_image' => 'image'
+        ], [
+            'edit_product_name.required' => 'Product name required.',
+            'edit_product_name.unique' => 'Product name already taken.',
+            'edit_product_image.image' => 'Product image invalid.'
+        ]);
+
+        if (!$validator->passes()) {
+            return response()->json(['code' => 0, 'status' => 'error', 'errors' => $validator->errors()->toArray()]);
+        } else {
+            $product = Products::find($request->input('edit_product_id'));
+            $product->product_name = $request->input('edit_product_name');
+
+            if ($request->file('edit_product_image')) {
+                unlink('storage/files/products/' . $product->product_image);
+                $path = 'files/products';
+                $image = $request->file('edit_product_image');
+                $image_name = Str::random(10) . time() . "." . $image->getClientOriginalExtension();
+                $image->storeAs($path, $image_name, 'public');
+                $product->product_image = $image_name;
+            }
+
+            $query = $product->update();
+
+            if ($query) {
+                return response()->json(['code' => 1, 'status' => 'success', 'method' => 'update', 'msg' => 'Product updated successfully.']);
+            } else {
+                return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not saved.']);
+            }
+        }
     }
 
     /**

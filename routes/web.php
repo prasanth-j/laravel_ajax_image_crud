@@ -19,7 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// This route should be added before the resource controller because it's a custom method.
-Route::get('product/fetch', [ProductController::class, 'fetch'])->name('product.fetch');
+// Route::resource('product', ProductController::class);
 
-Route::resource('product', ProductController::class);
+Route::get('product', [ProductController::class, 'index'])->name('product.index');
+Route::post('product', [ProductController::class, 'store'])->name('product.store');
+Route::get('product/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
+Route::post('product/update', [ProductController::class, 'update'])->name('product.update');
