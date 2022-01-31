@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
 
@@ -46,7 +47,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'product_name' => 'required|unique:products',
             'product_image' => 'required|image'
         ], [
@@ -56,7 +57,7 @@ class ProductController extends Controller
             'product_image.image' => 'Product image invalid.'
         ]);
 
-        if (!$validator->passes()) {
+        if ($validator->fails()) {
             return response()->json(['code' => 0, 'status' => 'error', 'errors' => $validator->errors()->toArray()]);
         } else {
             $path = 'files/products';
@@ -110,7 +111,7 @@ class ProductController extends Controller
      */
     public function update(Request $request)
     {
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'edit_product_name' => 'required|unique:products,product_name,' . $request->input('edit_product_id'),
             'edit_product_image' => 'image'
         ], [
@@ -119,7 +120,7 @@ class ProductController extends Controller
             'edit_product_image.image' => 'Product image invalid.'
         ]);
 
-        if (!$validator->passes()) {
+        if ($validator->fails()) {
             return response()->json(['code' => 0, 'status' => 'error', 'errors' => $validator->errors()->toArray()]);
         } else {
             $product = Products::find($request->input('edit_product_id'));
@@ -170,7 +171,7 @@ class ProductController extends Controller
         if ($query) {
             return response()->json(['code' => 1, 'status' => 'success', 'method' => 'destroy', 'msg' => 'Product deleted successfully.']);
         } else {
-            return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not deleted.']);
+            return response()->json(['code' => 0, 'status' => 'warning', 'method' => 'destroy', 'msg' => 'Database error! Product not deleted.']);
         }
     }
 }

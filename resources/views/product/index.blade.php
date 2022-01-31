@@ -58,15 +58,18 @@
                         Product List
                     </div>
                     <div class="card-body">
-                        <table class="table table-hover" id="productTable">
-                            <thead>
-                                <th>#</th>
-                                <th>Product Image</th>
-                                <th>Product Name</th>
-                                <th>Action</th>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="productTable">
+                                <thead>
+                                    <th>#</th>
+                                    <th>Product Image</th>
+                                    <th>Product Name</th>
+                                    <th>Action</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
 
@@ -214,10 +217,15 @@
                             $('#edit_img_holder').attr('src', 'https://dummyimage.com/200x200/cccccc/969696.png&text=Preview');
                             toastr[data.status](data.msg);
                             $('#editProductModal').modal('hide');
+                        } else {
+                            toastr["error"]("Unknown error! Product not " + data.method + "d.");
                         }
 
                         $('#addProductForm').find('button[type=submit]').text('Add').prop('disabled', false);
                         $('#editProductForm').find('button[type=submit]').text('Update').prop('disabled', false);
+                    },
+                    error: function(data) {
+                        toastr["error"]("Something went wrong!");
                     }
                 });
             });
@@ -253,7 +261,15 @@
                             if (data.code == 1 && data.status == 'success' && data.method == 'destroy') {
                                 $('#productTable').DataTable().ajax.reload(null, false);
                                 toastr[data.status](data.msg);
+                            } else if (data.code == 0 && data.status == 'warning' && data.method == 'destroy') {
+                                $('#productTable').DataTable().ajax.reload(null, false);
+                                toastr[data.status](data.msg);
+                            } else {
+                                toastr["error"]("Unknown error! Product not deleted.");
                             }
+                        },
+                        error: function(data) {
+                            toastr["error"]("Something went wrong!");
                         }
                     });
                 }
