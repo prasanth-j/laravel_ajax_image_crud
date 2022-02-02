@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductUpdate;
 use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -71,6 +72,7 @@ class ProductController extends Controller
             $query = $product->save();
 
             if ($query && $upload) {
+                event(new ProductUpdate("Created", $product->product_name, $product->product_image));
                 return response()->json(['code' => 1, 'status' => 'success', 'method' => 'store', 'msg' => 'Product added successfully.']);
             } else {
                 return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not saved.']);
@@ -144,6 +146,7 @@ class ProductController extends Controller
             $query = $product->update();
 
             if ($query) {
+                event(new ProductUpdate("Updated", $product->product_name, $product->product_image));
                 return response()->json(['code' => 1, 'status' => 'success', 'method' => 'update', 'msg' => 'Product updated successfully.']);
             } else {
                 return response()->json(['code' => 0, 'status' => 'warning', 'msg' => 'Database error! Product not updated.']);
@@ -169,6 +172,7 @@ class ProductController extends Controller
         $query = $product->delete();
 
         if ($query) {
+            event(new ProductUpdate("Deleted", $product->product_name, $product->product_image));
             return response()->json(['code' => 1, 'status' => 'success', 'method' => 'destroy', 'msg' => 'Product deleted successfully.']);
         } else {
             return response()->json(['code' => 0, 'status' => 'warning', 'method' => 'destroy', 'msg' => 'Database error! Product not deleted.']);

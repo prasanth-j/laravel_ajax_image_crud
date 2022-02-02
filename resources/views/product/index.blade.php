@@ -23,7 +23,7 @@
 
 <body>
     <div class="container">
-        <div class="row gy-4 mt-4">
+        <div class="row gy-4 my-4">
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -121,8 +121,18 @@
     <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
 
+    <!-- Custom Scripts -->
+    <script src="{{ asset('/js/app.js') }}"></script>
+
     <script>
         $(function() {
+
+            // Pusher realtime ajax reload
+            Echo.channel('product-update')
+                .listen('ProductUpdate', (e) => {
+                    $('#productTable').DataTable().ajax.reload(null, false);
+                    toastr["success"]('<div><img src="/storage/files/products/' + e.productImg + '" class="rounded img-fluid img-thumbnail" width="50px" alt="' + e.productName + ' Logo"> ' + e.productMsg + ' product ' + e.productName + '.</div>');
+                });
 
             // Fetch Products
             $('#productTable').DataTable({
