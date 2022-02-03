@@ -24,6 +24,7 @@
 <body>
     <div class="container">
         <div class="row gy-4 my-4">
+            <div id="realtime-notification"></div>
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -131,7 +132,24 @@
             Echo.channel('product-update')
                 .listen('ProductUpdate', (e) => {
                     $('#productTable').DataTable().ajax.reload(null, false);
-                    toastr["success"]('<div><img src="/storage/files/products/' + e.productImg + '" class="rounded img-fluid img-thumbnail" width="50px" alt="' + e.productName + ' Logo"> ' + e.productMsg + ' product ' + e.productName + '.</div>');
+                    // toastr["success"]('<div><img src="/storage/files/products/' + e.productImg + '" class="rounded img-fluid img-thumbnail" width="50px" alt="' + e.productName + ' Logo"> ' + e.productMsg + ' product ' + e.productName + '.</div>');
+
+                    if (e.productMsg == "Created") {
+                        $('#realtime-notification').append('<div class="alert alert-success alert-dismissible fade show" role="alert">\
+                                                            <div>Created Product <strong>' + e.productName + '</strong>.</div>\
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+                                                        </div>');
+                    } else if (e.productMsg == "Updated") {
+                        $('#realtime-notification').append('<div class="alert alert-warning alert-dismissible fade show" role="alert">\
+                                                            <div>Updated Product <strong>' + e.productName + '</strong>.</div>\
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+                                                        </div>');
+                    } else if (e.productMsg == "Deleted") {
+                        $('#realtime-notification').append('<div class="alert alert-danger alert-dismissible fade show" role="alert">\
+                                                            <div>Deleted Product <strong>' + e.productName + '</strong>.</div>\
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+                                                        </div>');
+                    }
                 });
 
             // Fetch Products
